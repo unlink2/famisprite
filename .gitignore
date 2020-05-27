@@ -1,0 +1,6 @@
+bin/
+obj/
+.vscode/
+compile_commands.json
+.clangd/
+build/
