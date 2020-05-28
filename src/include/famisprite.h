@@ -89,6 +89,11 @@ char* fami_encode_tile(char *data, char *decoded, unsigned int *length);
  */
 void fami_set_pixel(char *data, unsigned int x, unsigned int y, fami_color_index index);
 
+/**
+ * Returns:
+ *  pixel at x/y
+ */
+fami_color_index fami_get_pixel(char *data, unsigned int x, unsigned int y);
 
 /**
  * Inits fami_state with default values

@@ -158,6 +158,17 @@ static void test_fami_encode(void **state) {
     }
 }
 
+static void test_fami_set_pixel(void **state) {
+    char decoded[128];
+    unsigned int len = 32;
+    assert_ptr_equal(fami_decode((char*)test_sprite, &len, (char*)decoded), (char*)decoded);
+
+    // set sprite color
+    assert_int_equal(fami_get_pixel(decoded, 5, 10), 3);
+    fami_set_pixel(decoded, 5, 10, 1);
+    assert_int_equal(fami_get_pixel(decoded, 5, 10), 1);
+}
+
 int main() {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_fami_state_init),
@@ -167,7 +178,8 @@ int main() {
         cmocka_unit_test(test_fami_decode),
         cmocka_unit_test(test_fami_encode_pixel),
         cmocka_unit_test(test_fami_encode_tile),
-        cmocka_unit_test(test_fami_encode)
+        cmocka_unit_test(test_fami_encode),
+        cmocka_unit_test(test_fami_set_pixel)
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);

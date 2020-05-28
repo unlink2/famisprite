@@ -80,6 +80,16 @@ char* fami_encode_tile(char *data, char *encoded, unsigned int *length) {
     return encoded;
 }
 
+void fami_set_pixel(char *data, unsigned int x, unsigned int y, fami_color_index index) {
+    index &= FAMI_MAX_COLOR_INDEX;
+    // get coordinate
+    *(data+x+y*FAMI_TILE_LEN) = index;
+}
+
+fami_color_index fami_get_pixel(char *data, unsigned int x, unsigned int y) {
+    return *(data+x+y*FAMI_TILE_LEN);
+}
+
 void fami_init_state(fami_state_t *state) {
     // empty color
     fami_color_t color = {0, 0xFF, 0x7F};
