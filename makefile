@@ -18,6 +18,8 @@ MODULES = famisprite
 
 DEPS=$(patsubst %,$(INCLUDEDIR)/%.h,$(MODULES))
 OBJ=$(patsubst %,$(ODIR)/%.o,$(MODULES))
+OBJ+=$(patsubst %,$(ODIR)/%.o,$(MAIN))
+LIB_OBJ=$(patsubst %,$(ODIR)/%.o,$(MODULES))
 TEST_OBJ=$(patsubst %,$(ODIR)/%.o,$(MODULES))
 TEST_OBJ+=$(patsubst %,$(ODIR)/%.o,$(TEST_MAIN))
 
@@ -26,7 +28,10 @@ TEST_OBJ+=$(patsubst %,$(ODIR)/%.o,$(TEST_MAIN))
 $(ODIR)/%.o: $(SRCDIR)/%.c $(DEPS) | init
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-famisprite.a: $(OBJ)
+famisprite: $(OBJ)
+	$(CC) -o $(BINDIR)/$@ $^ $(LIBS)
+
+famisprite.a: $(LIB_OBJ)
 	ar rcs $(BINDIR)/$@ $^
 
 # test
