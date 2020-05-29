@@ -1,20 +1,20 @@
 CC=gcc
 DBG=gdb
-BIN=libfamisprite
+BIN=famisprite
 
 INCLUDEDIR=./src/include
 SRCDIR=./src
 ODIR=./obj
 BINDIR=./bin
 
-LIBS=
+LIBS=-lncurses
 CFLAGS=-Wall -g
 CFLAGS_RELEASE=-Wall -O1
 MAIN = main
 TEST_MAIN = test
 INSTALLDIR = /usr/local/bin
 
-MODULES = famisprite
+MODULES = famisprite utility
 
 DEPS=$(patsubst %,$(INCLUDEDIR)/%.h,$(MODULES))
 OBJ=$(patsubst %,$(ODIR)/%.o,$(MODULES))

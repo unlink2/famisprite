@@ -7,6 +7,7 @@
 #include <ctype.h>
 
 #include "include/famisprite.h"
+#include "include/utility.h"
 
 char assert_color_equal(fami_color_t c1, fami_color_t c2) {
     return ((c1.r & 0xFF) == (c2.r & 0xFF)) &&
@@ -169,6 +170,34 @@ static void test_fami_set_pixel(void **state) {
     assert_int_equal(fami_get_pixel(decoded, 5, 10), 1);
 }
 
+static void test_parse_arg(void **state) {
+    arg a1 = parse_arg("testargument", "test");
+
+    assert_string_equal(a1.key, "test");
+    assert_string_equal(a1.value, "argument");
+
+    arg a2 = parse_arg("--flag", "--flag");
+
+    assert_string_equal(a2.key, "--flag");
+    assert_int_equal(a2.value[0], '\0');
+
+    arg a3 = parse_arg("--flag", "--o");
+
+    assert_null(a3.key);
+    assert_null(a3.value);
+
+    arg a4 = parse_arg("-otest", "-o");
+    assert_string_equal(a4.key, "-o");
+    assert_string_equal(a4.value, "test");
+}
+
+static void test_is_arg(void **state) {
+    assert_true(is_arg("-htest", "-h"));
+    assert_true(is_arg("--h", "--h"));
+    assert_false(is_arg("-h", "--h"));
+    assert_false(is_arg("--otest", "-h"));
+}
+
 int main() {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_fami_state_init),
@@ -179,7 +208,9 @@ int main() {
         cmocka_unit_test(test_fami_encode_pixel),
         cmocka_unit_test(test_fami_encode_tile),
         cmocka_unit_test(test_fami_encode),
-        cmocka_unit_test(test_fami_set_pixel)
+        cmocka_unit_test(test_fami_set_pixel),
+        cmocka_unit_test(test_parse_arg),
+        cmocka_unit_test(test_is_arg)
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);
