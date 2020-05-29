@@ -218,8 +218,8 @@ void render_status(WINDOW *status_win, settings_t *ps) {
     wclear(status_win);
     box(status_win, 0, 0);
 
-    mvwprintw(status_win, 1, 1, "(Q)uit ");
-    wprintw(status_win, "(W)rite ");
+    mvwprintw(status_win, 1, 1, "(Q)Quit ");
+    wprintw(status_win, "(W)Write ");
     wprintw(status_win, "(1-4)Color");
 
     mvwprintw(status_win, 2, 1, "(Space)Paint ");
