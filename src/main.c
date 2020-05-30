@@ -211,7 +211,7 @@ void draw_pixel(WINDOW *win, int x, int y, int c) {
 }
 
 void render_main(WINDOW *main_win, settings_t *ps) {
-    wclear(main_win);
+    werase(main_win);
 
     int x = 0;
     int y = 0;
@@ -236,7 +236,7 @@ void render_main(WINDOW *main_win, settings_t *ps) {
 }
 
 void render_status(WINDOW *status_win, settings_t *ps) {
-    wclear(status_win);
+    werase(status_win);
     box(status_win, 0, 0);
 
     mvwprintw(status_win, 1, 1, "(Q)Quit ");
@@ -272,7 +272,7 @@ void gui(settings_t *ps) {
     fami_decode(ps->buffer+ps->offset, &len, (char*)ps->current);
 
     while (ps->running) {
-        clear();
+        erase();
         render_main(main_win, ps);
         render_status(status_win, ps);
 
