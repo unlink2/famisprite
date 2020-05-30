@@ -18,11 +18,14 @@
 #define PIXEL_W 2
 #define PIXEL_H 1
 
-#define C0PAIR 1
-#define C1PAIR 2
-#define C2PAIR 3
-#define C3PAIR 4
-#define CURSORPAIR 5
+enum FAMI_COLOR_PAIRS {
+    DEFAULT,
+    C0PAIR,
+    C1PAIR,
+    C2PAIR,
+    C3PAIR,
+    CURSORPAIR,
+};
 
 /**
  * Application state
@@ -46,6 +49,8 @@ typedef struct settings {
     uint32_t offset; // current buffer offset
     char long_sprite;
     uint32_t current_buffer;
+    char color_on;
+    char show_cursor;
 } settings_t;
 
 void init_settings(settings_t *settings) {
@@ -63,6 +68,8 @@ void init_settings(settings_t *settings) {
     settings->offset = 0;
     settings->long_sprite = 0;
     settings->current_buffer = MAX_BUFFER_SIZE/2;
+    settings->color_on = 1;
+    settings->show_cursor = 1;
 }
 
 
@@ -72,10 +79,13 @@ void parse_arg_inputs(int argc, char **argv, settings_t *ps) {
             printf("Usage: famisprite <infile> <outfile>\n\n");
             printf("Optional arguments:\n\n");
             printf("-o<number>\tStarting offset.");
+            printf("-no-color\tDisables colors");
             exit(0);
-        } if (is_arg(argv[i], "-o")) {
+        } else if (is_arg(argv[i], "-o")) {
             arg a = parse_arg(argv[i], "-o");
             ps->offset = strtol(a.value, NULL, 0);
+        } else if (is_arg(argv[i], "-no-color")) {
+            ps->color_on = 0;
         } else {
             // first set input then output then error
             if (!ps->input_path) {
@@ -128,14 +138,21 @@ void write_output_file(settings_t *ps) {
     fclose(f);
 }
 
-void init_curses() {
+void init_curses(settings_t *ps) {
     initscr();
     cbreak();
     noecho();
     keypad(stdscr, TRUE);
-    start_color();
 
-    init_pair(CURSORPAIR, COLOR_RED, COLOR_RED);
+    if (ps->color_on && has_colors()) {
+        start_color();
+
+        init_pair(C0PAIR, COLOR_BLACK, COLOR_BLACK);
+        init_pair(C1PAIR, COLOR_RED, COLOR_RED);
+        init_pair(C2PAIR, COLOR_GREEN, COLOR_GREEN);
+        init_pair(C3PAIR, COLOR_BLUE, COLOR_BLUE);
+        init_pair(CURSORPAIR, COLOR_MAGENTA, COLOR_MAGENTA);
+    }
 }
 
 void init_windows(WINDOW **main_win, WINDOW **status_win, settings_t *ps) {
@@ -158,7 +175,7 @@ void init_windows(WINDOW **main_win, WINDOW **status_win, settings_t *ps) {
 
     *main_win = newwin(height, width, 0, 0);
 
-    *status_win = newwin(6, width, height, 0);
+    *status_win = newwin(7, width, height, 0);
 }
 
 int coordinate_to_render_w(int x) {
@@ -199,7 +216,9 @@ void render_main(WINDOW *main_win, settings_t *ps) {
     int x = 0;
     int y = 0;
     for (int i = 0; i < ps->current_buffer; i++) {
+        wattron(main_win, COLOR_PAIR(ps->current[i]+1));
         draw_pixel(main_win, x, y, color_to_char(ps->current[i]));
+        wattroff(main_win, COLOR_PAIR(ps->current[i]+1));
         x++;
         if (x >= FAMI_TILE_LEN) {
             y++;
@@ -207,9 +226,11 @@ void render_main(WINDOW *main_win, settings_t *ps) {
         }
     }
 
-    attron(COLOR_PAIR(CURSORPAIR));
-    draw_pixel(main_win, ps->cursor_x, ps->cursor_y, '$');
-    attroff(COLOR_PAIR(CURSORPAIR));
+    if (ps->show_cursor) {
+        wattron(main_win, COLOR_PAIR(CURSORPAIR));
+        draw_pixel(main_win, ps->cursor_x, ps->cursor_y, '$');
+        wattroff(main_win, COLOR_PAIR(CURSORPAIR));
+    }
 
     box(main_win, 0 , 0);
 }
@@ -228,9 +249,11 @@ void render_status(WINDOW *status_win, settings_t *ps) {
 
     mvwprintw(status_win, 3, 1, "(<>)+/- ");
     wprintw(status_win, "(R)Reload ");
-    wprintw(status_win, "(F)Fill");
+    wprintw(status_win, "(F)Fill ");
 
-    mvwprintw(status_win, 4, 1, "Color: %d ", ps->color);
+    mvwprintw(status_win, 4, 1, "(C)Hide Cursor");
+
+    mvwprintw(status_win, 5, 1, "Color: %d ", ps->color);
     wprintw(status_win, "Offset: %X", ps->offset);
 }
 
@@ -339,6 +362,9 @@ void gui(settings_t *ps) {
                 len = ps->current_buffer/4;
                 fami_decode(ps->buffer+ps->offset, &len, (char*)ps->current);
                 break;
+            case 'c':
+                ps->show_cursor = !ps->show_cursor;
+                break;
         }
 
         // check cursor oob
@@ -366,7 +392,7 @@ int main(int argc, char **argv) {
 
     read_input_file(&settings);
 
-    init_curses();
+    init_curses(&settings);
     gui(&settings);
     end_curses();
 
