@@ -90,7 +90,8 @@ void parse_arg_inputs(int argc, char **argv, settings_t *ps) {
             // first set input then output then error
             if (!ps->input_path) {
                 ps->input_path = argv[i];
-            } else if (strcmp(ps->output_path, "./out.bin") == 0){
+                ps->output_path = argv[i];
+            } else if (strcmp(ps->output_path, ps->input_path) == 0){
                 ps->output_path = argv[i];
             } else {
                 printf("Unknown argument: %s\n", argv[i]);
